@@ -5,9 +5,6 @@ from google.genai import types
 from PIL import Image as PILImage
 import os
 
-# -----------------------------------------------------------------------------
-# GLOBAL ENTERPRISE CONFIG & SEO META TAGS
-# -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="VortixAI - Next-Gen Global AI",
     page_icon="⚡",
@@ -15,35 +12,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Injecting HTML/SEO Meta Tags
-st.markdown("""
-<head>
-    <meta name="description" content="VortixAI Enterprise Platform: High-performance AI processing engine.">
-    <meta name="keywords" content="VortixAI, AI Platform, Gemini API, Streamlit AI">
-    <meta name="author" content="VortixAI Engineering">
-</head>
-""", unsafe_allow_dict=True)
-
-# Custom CSS Styling
-st.markdown("""
-<style>
-    .main-header {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #FFFFFF;
-        margin-bottom: 0px;
-    }
-    .sub-header {
-        font-size: 0.95rem;
-        color: #888888;
-        margin-bottom: 20px;
-    }
-</style>
-""", unsafe_allow_dict=True)
-
-# -----------------------------------------------------------------------------
-# SESSION STATE INITIALIZATION
-# -----------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -53,9 +21,6 @@ if "daily_quota" not in st.session_state:
 if "monthly_quota" not in st.session_state:
     st.session_state.monthly_quota = 0
 
-# -----------------------------------------------------------------------------
-# SIDEBAR NAVIGATION & CONFIGURATION
-# -----------------------------------------------------------------------------
 with st.sidebar:
     st.title("🌐 VortixAI Enterprise Hub")
     
@@ -74,7 +39,7 @@ with st.sidebar:
         index=0
     )
 
-    anti_fluff = st.toggle("Anti-Fluff Semantic Filter (Active)", value=True, help="Removes unnecessary introductory filler.")
+    anti_fluff = st.toggle("Anti-Fluff Semantic Filter (Active)", value=True)
 
     st.divider()
     st.subheader("🖼️ Global Image Quota")
@@ -86,20 +51,14 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
 
-# -----------------------------------------------------------------------------
-# MAIN LAYOUT & HEADER
-# -----------------------------------------------------------------------------
-st.markdown('<div class="main-header">⚡ VortixAI</div>', unsafe_allow_dict=True)
-st.markdown('<div class="sub-header">Enterprise-Grade Global AI Intelligence Platform | Zero-Fluff & High-Performance</div>', unsafe_allow_dict=True)
+st.markdown("<h1>⚡ VortixAI</h1>", unsafe_allow_html=True)
+st.markdown("<p style='color: #888888;'>Enterprise-Grade Global AI Intelligence Platform</p>", unsafe_allow_html=True)
 
 if not api_key_input:
     st.warning("⚠️ Please configure your Gemini API Key to initialize VortixAI.")
     st.stop()
 
-# -----------------------------------------------------------------------------
-# MULTI-MODAL FILE UPLOAD
-# -----------------------------------------------------------------------------
-uploaded_file = st.file_uploader("Upload image or file for deep neural analysis:", type=["png", "jpg", "jpeg", "pdf", "txt"])
+uploaded_file = st.file_uploader("Upload image or file:", type=["png", "jpg", "jpeg", "pdf", "txt"])
 img_data = None
 
 if uploaded_file is not None:
@@ -107,30 +66,22 @@ if uploaded_file is not None:
         img_data = PILImage.open(uploaded_file)
         st.image(img_data, caption="Uploaded Image Preview", use_container_width=True)
 
-# -----------------------------------------------------------------------------
-# CHAT INTERFACE & HISTORY
-# -----------------------------------------------------------------------------
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# User Input Box
-user_prompt = st.chat_input("Ask VortixAI or use commands like...")
+user_prompt = st.chat_input("Ask VortixAI...")
 
 if user_prompt:
-    # Append user message
     st.session_state.messages.append({"role": "user", "content": user_prompt})
     with st.chat_message("user"):
         st.markdown(user_prompt)
 
-    # Process response with Gemini API (Fresh Client per Request)
     with st.chat_message("assistant"):
         with st.spinner("Processing prompt..."):
             try:
-                # Dynamically initialize client to avoid 'closed client' session drops
                 client = genai.Client(api_key=api_key_input)
                 
-                # Map engine back to real Gemini API models
                 target_model = "gemini-2.5-flash"
                 if "2.5-pro" in engine_choice:
                     target_model = "gemini-2.5-pro"
@@ -143,7 +94,7 @@ if user_prompt:
                 
                 prompt_text = user_prompt
                 if anti_fluff:
-                    prompt_text += " (Note: Provide a direct, concise, and high-performance response without unnecessary greetings or filler.)"
+                    prompt_text += " (Note: Provide a direct and concise response.)"
 
                 content_payload.append(prompt_text)
 
