@@ -82,7 +82,8 @@ if user_prompt:
             try:
                 client = genai.Client(api_key=api_key_input)
                 
-                target_model = "gemini-2.5-flash"
+                # Updated model name here
+                target_model = "gemini-3.8-flash"
                 if "2.5-pro" in engine_choice:
                     target_model = "gemini-2.5-pro"
 
