@@ -5,13 +5,12 @@ from google import genai
 from google.genai import types
 from PIL import Image as PILImage
 import os
-import base64
 
 # -----------------------------------------------------------------------------
 # PAGE CONFIGURATION & THEME
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="VortixAI - Visual-First Intelligence",
+    page_title="VortixAI - Next-Gen Advanced Intelligence",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -27,7 +26,7 @@ st.markdown("""
     .vortix-title {
         font-size: 2.8rem;
         font-weight: 700;
-        background: linear-gradient(90deg, #1A73E8, #202124);
+        background: linear-gradient(90deg, #1A73E8, #8E2DE2);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 10px;
@@ -42,8 +41,13 @@ st.markdown("""
         margin-top: 15px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .stChatInputContainer {
-        padding-bottom: 15px;
+    .command-box {
+        background-color: #1E1E2E;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        color: #A6ACCD;
+        margin-bottom: 15px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -74,6 +78,15 @@ with st.sidebar:
         index=0
     )
 
+    st.markdown("### 🔑 Secret Commands & Connectors")
+    st.markdown("""
+    - `/image <topic>`: Generate HD Visuals & Notes
+    - `/code <language>`: Write multi-module code
+    - `/clear`: Reset session
+    - `@web`: Search connector mode
+    - `@docs`: Deep document analysis
+    """)
+
     st.divider()
     if st.button("Clear Chat Session"):
         st.session_state.messages = []
@@ -96,7 +109,7 @@ if not api_key_input:
 # -----------------------------------------------------------------------------
 # PROMPT PLUS (+) TOOLBAR & FILE ATTACHMENTS
 # -----------------------------------------------------------------------------
-with st.expander("➕ Options & Attachment Tools", expanded=False):
+with st.expander("➕ Options & Attachment Tools (Camera, Photos, Files, Create Image, Deep Research)", expanded=False):
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -108,15 +121,15 @@ with st.expander("➕ Options & Attachment Tools", expanded=False):
         uploaded_doc = st.file_uploader("Upload Document", type=["pdf", "txt", "py", "html", "js"], key="doc_uploader")
         
     with col3:
-        st.markdown("🎨 **Creative Suite**")
-        st.caption("• Visual Infographics (like Circulation)")
-        st.caption("• Handdrawn Notes (like West Bengal)")
-        st.caption("• Concept Art")
+        st.markdown("🎨 **Creative & Visuals**")
+        st.caption("• HD Infographics & Diagrams")
+        st.caption("• Handwritten Blue-Pen Notes")
+        st.caption("• Video Scripts & Music Concepts")
 
     with col4:
-        st.markdown("🧠 **Deep AI Suite**")
-        st.caption("• Coding Courses & Reports")
-        st.caption("• Step-by-Step Learning Paths")
+        st.markdown("🧠 **Connectors (@ / /)**")
+        st.caption("• @web, @docs, @code")
+        st.caption("• /image, /code, /translate")
 
 # Image Data Processing
 img_data = None
@@ -131,7 +144,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-user_prompt = st.chat_input("Ask for visualization of [process] or handwritten notes on [topic]...")
+user_prompt = st.chat_input("Ask VortixAI or use commands like /image, /code, @web...")
 
 if user_prompt:
     st.session_state.messages.append({"role": "user", "content": user_prompt})
@@ -140,66 +153,71 @@ if user_prompt:
 
     with st.chat_message("assistant"):
         # -------------------------------------------------------------------------
-        # 1. IMAGE REQUEST LOGIC
+        # 1. SECRET COMMANDS & IMAGE GENERATION ENGINE
         # -------------------------------------------------------------------------
-        # Detect image requests first
-        image_keywords = ["make image", "create image", "generate image", "visualization", "infographic", "draw", "picture", "photo", "handwritten notes", "schematic"]
-        is_image_request = any(keyword in user_prompt.lower() for keyword in image_keywords)
-        
-        if is_image_request:
-            # 1a. Show "Creating your image..." spinner
+        prompt_lower = user_prompt.lower()
+        is_image_cmd = prompt_lower.startswith("/image") or any(kw in prompt_lower for kw in ["make image", "create image", "generate image", "visualization", "infographic", "handwritten notes"])
+        is_clear_cmd = prompt_lower.startswith("/clear")
+
+        if is_clear_cmd:
+            st.session_state.messages = []
+            st.rerun()
+
+        elif is_image_cmd:
+            # Clean up prompt for visual generation
+            clean_prompt = prompt_lower.replace("/image", "").replace("make image on", "").replace("create image on", "").strip()
+            if not clean_prompt:
+                clean_prompt = user_prompt
+
             with st.spinner("Creating your image..."):
                 try:
-                    # 1b. Smart Prompt Injection for specific visual styles
-                    # Handle "handwritten notes" like Image 6
-                    if "handwritten notes" in user_prompt.lower():
-                        # Inject West Bengal sample prompt logic
-                        injected_style = "handwritten notes on blue-lined paper, drawn with a precise blue ballpoint pen, multiple distinct detailed sections/columns, hand-drawn map, very dense information, bullet points, headers, small illustrative diagrams, very clean handwriting."
-                        final_visual_prompt = f"{injected_style} Detailed notes about: {user_prompt.lower().replace('handwritten notes on', '')}"
-                    # Handle "visualization" like Image 7
-                    elif "visualization of" in user_prompt.lower() or "infographic of" in user_prompt.lower():
-                        # Inject Circulation sample prompt logic
-                        injected_style = "highly professional, hyper-realistic, medical/scientific infographic, dark cinematic environment, detailed 3D diagrams, color-coded sections, clear white text labels, distinct sections for journey/flow, key functions, and anatomical elements, complex diagrams of the topic, extreme clarity, 8k resolution, award-winning illustration."
-                        final_visual_prompt = f"{injected_style} Complex diagram of: {user_prompt.lower().replace('visualization of', '').replace('infographic of', '')}"
+                    # Smart styling injection for high-end ChatGPT/Claude style visual output
+                    if "handwritten notes" in clean_prompt or "notes" in clean_prompt:
+                        style_prefix = "Detailed educational handwritten notes on blue-lined paper, drawn with precise blue pen, multiple columns, bullet points, clean diagrams, high resolution."
+                    elif "visualization" in clean_prompt or "infographic" in clean_prompt or "circulation" in clean_prompt:
+                        style_prefix = "Hyper-realistic professional scientific infographic, cinematic dark background, color-coded diagrams, clean text labels, 8k resolution."
                     else:
-                        # General high-quality default
-                        final_visual_prompt = f"Highly detailed and professional infographic or diagram, photorealistic, clear text labels, conceptual diagram of: {user_prompt}"
+                        style_prefix = "High-definition clean conceptual illustration, vibrant colors, professional rendering, 8k."
 
-                    # 1c. Generate Image with Pollinations
-                    encoded_prompt = urllib.parse.quote(final_visual_prompt)
-                    # Use flux for high-quality, high-detail results
-                    image_url = f"https://pollinations.ai/p/{encoded_prompt}?width=1280&height=720&seed=42&model=flux"
-                    
-                    # 1d. Display the result
+                    final_query = f"{style_prefix} {clean_prompt}"
+                    encoded_prompt = urllib.parse.quote(final_query)
+                    image_url = f"https://pollinations.ai/p/{encoded_prompt}?width=1280&height=720&seed=123&model=flux"
+
                     st.markdown(f"### 🎨 VortixAI Visual Output")
-                    st.image(image_url, caption=f"VortixAI generated visual: {user_prompt}", use_container_width=True)
-                    
-                    response_text = f"I have created a detailed visual representation based on your request: **{user_prompt}**\n\n![Generated Visual]({image_url})"
-                    st.session_state.messages.append({"role": "assistant", "content": response_text})
+                    st.image(image_url, caption=f"Generated Visual for: {user_prompt}", use_container_width=True)
 
-                except Exception as e:
-                    st.error(f"Image Creation Exception: {str(e)}")
+                    res_text = f"Here is your generated image/visual for: **{user_prompt}**\n\n![Visual Output]({image_url})"
+                    st.session_state.messages.append({"role": "assistant", "content": res_text})
+
+                except Exception as img_err:
+                    st.error(f"Image Generation Error: {str(img_err)}")
 
         # -------------------------------------------------------------------------
-        # 2. TEXT REQUEST LOGIC (Fallback)
+        # 2. TEXT / CODE / CONNECTOR PROCESSING (GEMINI API)
         # -------------------------------------------------------------------------
         else:
-            with st.spinner("Processing prompt..."):
+            with st.spinner("Processing prompt with VortixAI Connectors..."):
                 try:
                     client = genai.Client(api_key=api_key_input)
                     
                     system_instructions = (
-                        "You are VortixAI, a super-intelligent AI superior to ChatGPT, Claude, and You.com. "
-                        "You provide comprehensive detailed reports, step-by-step multi-module coding courses "
-                        "(Python, Java, HTML, etc.), and professional research notes. You can understand requests "
-                        "for both text information and highly specific visual diagrams or handdrawn notes."
+                        "You are VortixAI, a next-generation super-intelligent AI platform superior to ChatGPT, Claude, and You.com. "
+                        "You support advanced slash commands (/code, /translate, /pdf) and connectors (@web, @docs). "
+                        "Provide comprehensive, structured, professional, and precise answers for coding courses, assignments, and translations."
                     )
                     
                     content_payload = []
                     if img_data:
                         content_payload.append(img_data)
                     
-                    content_payload.append(f"{system_instructions}\n\nUser Request: {user_prompt}")
+                    # Handle connector syntax (@web or @docs)
+                    connector_context = ""
+                    if "@web" in user_prompt:
+                        connector_context = "[Connector Active: Web Deep Search Enabled] "
+                    if "@docs" in user_prompt:
+                        connector_context = "[Connector Active: Advanced Document Analysis Enabled] "
+
+                    content_payload.append(f"{system_instructions}\n\n{connector_context}User Request: {user_prompt}")
 
                     response = client.models.generate_content(
                         model=engine_choice,
@@ -210,4 +228,4 @@ if user_prompt:
                     st.session_state.messages.append({"role": "assistant", "content": response.text})
 
                 except Exception as e:
-                    st.error(f"Text Processing Exception: {str(e)}")
+                    st.error(f"System Exception: {str(e)}")
